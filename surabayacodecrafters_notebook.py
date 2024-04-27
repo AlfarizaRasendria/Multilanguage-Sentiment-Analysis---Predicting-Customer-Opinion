@@ -319,7 +319,32 @@ from nlp_id.lemmatizer import Lemmatizer
 from nltk.tokenize import word_tokenize
 from nltk.corpus import stopwords
 
+def normalize_text(input_df):
+    result = []
+    for index, row in input_df.iterrows():
+        input_text = row.REVIEW
+        lang = row.Language
+        stopwords_lang = 'english' if lang == 'en' else 'indonesian'
+        lowercase = tf.strings.lower(input_text)
+        stripped_string = tf.strings.regex_replace(lowercase,
+                                               '[%s]' % re.escape(string.punctuation),
+                                               '')
+        stripped_string_list = stripped_string.numpy()
+        words = stripped_string_list.split()
 
+        lemmatizer = WordNetLemmatizer() if lang == 'en' else Lemmatizer()
+
+        normalized_text = " ".join([lemmatizer.lemmatize(word.decode('utf-8')) for word in words])
+        normalized_text = re.sub(r'(.)\1{2,}', r'\1', normalized_text)
+        tokenized_words = word_tokenize(normalized_text)
+
+        stop_words = stopwords.words(stopwords_lang)
+        tokenized_words =  [word for word in tokenized_words if not word.lower() in stop_words and len(word) > 1]
+
+        sentence = " ".join(tokenized_words)
+        result.append(sentence)
+
+    return result
 
 from sklearn.preprocessing import OneHotEncoder
 
