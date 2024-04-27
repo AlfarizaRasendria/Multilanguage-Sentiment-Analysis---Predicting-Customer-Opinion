@@ -502,7 +502,12 @@ tested_padded = pad_sequences(tested_sequences,padding='post',
 maxlen=50,
 truncating='post')
 
-
+predictions = []
+for sample in tested_padded:
+    prediction = model.predict(np.expand_dims(sample, axis=0))
+    prediction = np.argmax(prediction) + 1
+    predictions.append(prediction)
+df_test["LABEL"] = predictions
 
 df_test = df_test.drop(['REVIEW','Language'], axis=1)
 
