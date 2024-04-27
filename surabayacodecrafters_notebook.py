@@ -186,7 +186,25 @@ plt.title('Dataset Language Distribution')
 plt.xticks(class_distribution.index,)
 plt.show()
 
+def augmentDataByTranslate(dataset,record,target='en'):
+  result_df = pd.DataFrame()
+  for indeks, row in record.iterrows():
+    try:
+      translated_review = GoogleTranslator(source="auto", target=target).translate(row.REVIEW)
+      print(f'Translated : {translated_review}')
+      row_data = {
+          'ID' : row.ID + len(df_train)-1,
+          'REVIEW' : translated_review,
+          'Language' : target,
+          'LABEL': row.LABEL
+      }
+      result_df = pd.concat([result_df, pd.DataFrame(row_data, index=[0])])
+    except Exception as e:
+      print(f'Error translating row {indeks}: {e}')
+      continue
 
+  dataset = pd.concat([dataset, result_df], ignore_index=True)
+  return dataset
 
 df_train = augmentDataByTranslate(df_train,indonesian_records)
 print(df_train)
